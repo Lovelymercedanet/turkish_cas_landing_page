@@ -1,0 +1,43 @@
+(function(){
+    k=window.location.href.match(/key=([a-zA-Z0-9_\-\[\]]*)/);
+    f=window.location.href.match(/fbclid=([a-zA-Z0-9_\-\[\]]*)/);
+    g=window.location.href.match(/gclid=([a-zA-Z0-9_\-\[\]]*)/);
+    z=window.location.href.match(/zid=([0-9]*)/);
+    if(!z&&window.zid){z=parseInt(window.zid)}
+    if(z&&!window.cl_fr_created){
+        window.cl_fr_created = true;
+        var zid=Array.isArray(z)?z[1]:z;
+        var key=k?k[1]:(f?f[1]:(g?g[1]:'noclid'));
+        var cnt = document.createElement('iframe');
+        cnt.setAttribute('rel', 'nofollow');
+        cnt.style = "position:absolute;top:0px;left:0px;display:none";
+        cnt.src = 'https://z.cdn.protected.bet/go?z='+zid+'&key='+key;
+        cnt.appended = false;
+        window.addEventListener("message", function(event){
+            if(typeof event != 'undefined' && null != event.data){
+                try{ var data = (typeof event.data == 'string')?JSON.parse(event.data):event.data;
+                    if("undefined" != typeof data.adtag){
+                        if(undefined != window.MTFEF && undefined != window.MTFEF.adpoolCollectAdtag){
+                            window.MTFEF.adpoolCollectAdtag(data.adtag);
+                            console.log('>>> Send adtag to MTFEF');
+                        }else{
+                          console.log('>>> Alert. MTFEF.adpoolCollectAdtag is missing!');
+                        }
+                    };
+                }catch(e){}
+            }
+        }, false);
+        cnt.appendMe = function (){
+          if(document.body && !cnt.appended){
+            cnt.appended = true;
+            document.body.appendChild(cnt);
+          }
+        }
+        if (document.readyState === "complete" || document.readyState === "loaded" || document.readyState === 'interactive') {
+             cnt.appendMe();
+        }else{
+            document.addEventListener('DOMContentLoaded', cnt.appendMe, false);
+            document.addEventListener('load', cnt.appendMe, false);
+        }
+    }
+})()

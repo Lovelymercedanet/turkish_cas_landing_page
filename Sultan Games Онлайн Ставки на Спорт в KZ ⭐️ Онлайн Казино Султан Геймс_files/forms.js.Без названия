@@ -1,0 +1,96 @@
+/** The example of your forms.js implementation*/
+
+/**  Define vars **/
+const formReg = $("#formReg");
+const errorBlock = $("#errormsg");
+const redirectLinks = $(".redirectLink");
+const thanksModal = $("#modalThanks");
+const accountField = thanksModal.find(".code");
+
+/** Set **/
+$(document).ready(function () {
+	formReg.prop("onsubmit", null);
+	formReg.find('button[type="button"]').prop("type", "submit");
+	//Remove when uxbtc will be ready for casino
+
+	formReg.on("submit", function (e) {
+		e.preventDefault();
+		/** hide your errors block */
+
+		if (
+			!formReg.hasClass("notValid") &&
+			!$("body").hasClass("is-request")
+		) {
+			errorBlock.hide();
+			/** Gather data from this form  */
+			let data = getFormData($(this));
+			sendApiRequest(
+				data,
+				successRegCallback,
+				errorCallback,
+				actionCallback
+			);
+		}
+	});
+});
+
+/** Your Callback-Functions **/
+
+function successRegCallback(response) {
+	/** The number of registered account */
+	let account = response.account;
+	/** Link to redirect user to be authorized */
+	let redirectTo = response.redirectDomain;
+
+	/** Change links that redirect your user to that one which Api returned */
+
+	let tagParams = document.location.search;
+	let redirect =
+		redirectTo +
+		"/ru/deposit?landing&bonus=" +
+		window.nnbonus +
+		"/" +
+		tagParams;
+	if (redirectLinks.length > 0) {
+		redirectLinks.attr("href", redirect);
+	}
+
+	if (!!response.res && response.res.RegistrationType == "Short by phone") {
+		redirect =
+			redirectTo +
+			"/ru/deposit?landing&bonus=" +
+			window.nnbonus +
+			"/" +
+			tagParams;
+	}
+
+	setTimeout(function () {
+		window.location.href = redirect;
+	}, 1500);
+}
+
+function errorCallback(response) {
+	/** response.message is the error text to be shown for user */
+	let message = response.message;
+	triggerError(message);
+}
+
+function actionCallback(response) {
+	/** Action needed */
+	/** Example: action === "showSms" - need to show field with smsCode */
+	let action = response.action;
+	let message = response.message;
+
+	if (action === "showSms") {
+		/** Implement your logic to show sms field */
+		// your logic here
+		/** show an error */
+		triggerError(message);
+	}
+}
+
+/** Functions */
+function triggerError(message) {
+	errorBlock.show();
+	errorBlock.text(message);
+}
